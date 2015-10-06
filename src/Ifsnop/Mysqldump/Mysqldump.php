@@ -449,6 +449,28 @@ class Mysqldump
         }
     }
 
+
+    /**
+     * Check if table is excluded by name, or regular expressions
+     *
+     * @param $table
+     * @return bool
+     */
+    private function isExcluded($table)
+    {
+        $exclude = false;
+
+        if ( is_array($this->dumpSettings['exclude-pattern']) ) {
+            foreach ($this->dumpSettings['exclude-pattern'] as $pattern) {
+                if ( preg_match($pattern, $table) ) {
+                    $exclude = true;
+                }
+            }
+        }
+
+        return in_array($table, $this->dumpSettings['exclude-tables'], true) || $exclude;
+    }
+
     /**
      * Exports all the tables selected from database
      *
@@ -458,7 +480,7 @@ class Mysqldump
     {
         // Exporting tables one by one
         foreach ($this->tables as $table) {
-            if (in_array($table, $this->dumpSettings['exclude-tables'], true) || (($this->dumpSettings['exclude-pattern'] !== false) && (preg_match($this->dumpSettings['exclude-pattern'], $table))) ) {
+            if ( $this->isExcluded($table) ) {
                 continue;
             }
             $this->getTableStructure($table);
@@ -478,14 +500,14 @@ class Mysqldump
         if (false === $this->dumpSettings['no-create-info']) {
             // Exporting views one by one
             foreach ($this->views as $view) {
-                if (in_array($table, $this->dumpSettings['exclude-tables'], true) || (($this->dumpSettings['exclude-pattern'] !== false) && (preg_match($this->dumpSettings['exclude-pattern'], $table))) ) {
+                if ( $this->isExcluded($view) ) {
                     continue;
                 }
                 $this->tableColumnTypes[$view] = $this->getTableColumnTypes($view);
                 $this->getViewStructureTable($view);
             }
             foreach ($this->views as $view) {
-                if (in_array($table, $this->dumpSettings['exclude-tables'], true) || (($this->dumpSettings['exclude-pattern'] !== false) && (preg_match($this->dumpSettings['exclude-pattern'], $table))) ) {
+                if ( $this->isExcluded($view) ) {
                     continue;
                 }
                 $this->getViewStructureView($view);
