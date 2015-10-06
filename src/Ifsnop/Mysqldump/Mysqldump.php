@@ -118,6 +118,7 @@ class Mysqldump
             'compress' => Mysqldump::NONE,
             'no-data' => false,
             'add-drop-table' => false,
+            'add-truncate-table' => false,
             'single-transaction' => true,
             'lock-tables' => true,
             'add-locks' => true,
@@ -550,6 +551,11 @@ class Mysqldump
                 if ($this->dumpSettings['add-drop-table']) {
                     $this->compressManager->write(
                         $this->typeAdapter->drop_table($tableName)
+                    );
+                }
+                if ($this->dumpSettings['add-truncate-table']) {
+                    $this->compressManager->write(
+                        $this->typeAdapter->truncate_table($tableName)
                     );
                 }
                 $this->compressManager->write(
@@ -1600,6 +1606,17 @@ class TypeAdapterMysql extends TypeAdapterFactory
 
         return "DROP TABLE IF EXISTS `${args[0]}`;" . PHP_EOL .
                 "/*!50001 DROP VIEW IF EXISTS `${args[0]}`*/;" . PHP_EOL;
+    }
+
+    public function truncate_table()
+    {
+        if (func_num_args() != 1) {
+            throw new Exception("Unexpected parameter passed to " . __METHOD__);
+        }
+
+        $args = func_get_args();
+
+        return "TRUNCATE TABLE `${args[0]}`;" . PHP_EOL;
     }
 
     public function getDatabaseHeader()
