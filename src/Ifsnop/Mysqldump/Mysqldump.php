@@ -114,6 +114,7 @@ class Mysqldump
         $dumpSettingsDefault = array(
             'include-tables' => array(),
             'exclude-tables' => array(),
+            'exclude-pattern' => false,
             'compress' => Mysqldump::NONE,
             'no-data' => false,
             'add-drop-table' => false,
@@ -136,7 +137,7 @@ class Mysqldump
             'skip-dump-date' => false,
             'init_commands' => array(),
             /* deprecated */
-            'disable-foreign-keys-check' => true
+            'disable-foreign-keys-check' => true,
         );
 
         $pdoSettingsDefault = array(
@@ -457,7 +458,7 @@ class Mysqldump
     {
         // Exporting tables one by one
         foreach ($this->tables as $table) {
-            if (in_array($table, $this->dumpSettings['exclude-tables'], true)) {
+            if (in_array($table, $this->dumpSettings['exclude-tables'], true) || (($this->dumpSettings['exclude-pattern'] !== false) && (preg_match($this->dumpSettings['exclude-pattern'], $table))) ) {
                 continue;
             }
             $this->getTableStructure($table);
@@ -477,14 +478,14 @@ class Mysqldump
         if (false === $this->dumpSettings['no-create-info']) {
             // Exporting views one by one
             foreach ($this->views as $view) {
-                if (in_array($view, $this->dumpSettings['exclude-tables'], true)) {
+                if (in_array($table, $this->dumpSettings['exclude-tables'], true) || (($this->dumpSettings['exclude-pattern'] !== false) && (preg_match($this->dumpSettings['exclude-pattern'], $table))) ) {
                     continue;
                 }
                 $this->tableColumnTypes[$view] = $this->getTableColumnTypes($view);
                 $this->getViewStructureTable($view);
             }
             foreach ($this->views as $view) {
-                if (in_array($view, $this->dumpSettings['exclude-tables'], true)) {
+                if (in_array($table, $this->dumpSettings['exclude-tables'], true) || (($this->dumpSettings['exclude-pattern'] !== false) && (preg_match($this->dumpSettings['exclude-pattern'], $table))) ) {
                     continue;
                 }
                 $this->getViewStructureView($view);
