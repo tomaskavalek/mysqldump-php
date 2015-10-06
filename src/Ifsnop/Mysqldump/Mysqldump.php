@@ -553,15 +553,16 @@ class Mysqldump
                         $this->typeAdapter->drop_table($tableName)
                     );
                 }
-                if ($this->dumpSettings['add-truncate-table']) {
-                    $this->compressManager->write(
-                        $this->typeAdapter->truncate_table($tableName)
-                    );
-                }
                 $this->compressManager->write(
                     $this->typeAdapter->create_table($r, $this->dumpSettings)
                 );
                 break;
+            }
+        } else {
+            if ($this->dumpSettings['add-truncate-table']) {
+                $this->compressManager->write(
+                    $this->typeAdapter->truncate_table($tableName)
+                );
             }
         }
         $this->tableColumnTypes[$tableName] = $this->getTableColumnTypes($tableName);
